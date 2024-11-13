@@ -10,6 +10,7 @@ import MultipartForm
 import RxSwift
 import RxCocoa
 import Combine
+import CombineExt
 
 extension TodosApi {
     // MARK: 모든 할 일 목록 가져오기
@@ -130,7 +131,7 @@ extension TodosApi {
         
         return URLSession.shared
             .dataTaskPublisher(for: urlRequest)
-            .tryMap({ (data: Data, urlResponse: URLResponse) in
+            .tryMap({ (data: Data, urlResponse: URLResponse) -> Data in
                 guard let httpResponse = urlResponse as? HTTPURLResponse else {
                     throw ApiError.unknown(nil)
                 }
@@ -153,6 +154,13 @@ extension TodosApi {
                 return data
             })
             .decode(type: BaseResponse<Todo>.self, decoder: JSONDecoder())
+            .tryMap({ response in
+                guard let _ = response.data else {
+                    throw ApiError.noContent
+                }
+                
+                return response
+            })
             .mapError({ error in
                 if let error = error as? ApiError {
                     return error
@@ -278,6 +286,13 @@ extension TodosApi {
                 return data
             }
             .decode(type: BaseResponse<Todo>.self, decoder: JSONDecoder())
+            .tryMap({ response in
+                guard let _ = response.data else {
+                    throw ApiError.noContent
+                }
+                
+                return response
+            })
             .mapError({ error in
                 if let error = error as? ApiError {
                     return error
@@ -416,6 +431,13 @@ extension TodosApi {
                 return data
             })
             .decode(type: BaseResponse<Todo>.self, decoder: JSONDecoder())
+            .tryMap({ response in
+                guard let _ = response.data else {
+                    throw ApiError.noContent
+                }
+                
+                return response
+            })
             .mapError({ error in
                 if let error = error as? ApiError {
                     return error
@@ -538,6 +560,13 @@ extension TodosApi {
                 return data
             }
             .decode(type: BaseResponse<Todo>.self, decoder: JSONDecoder())
+            .tryMap({ response in
+                guard let _ = response.data else {
+                    throw ApiError.noContent
+                }
+                
+                return response
+            })
             .mapError({ error in
                 if let error = error as? ApiError {
                     return error
@@ -559,56 +588,107 @@ extension TodosApi {
     static func addTodoAndFetchTodosWithPublisher(
         title: String,
         isDone: Bool = false
-    ) -> Observable<[Todo]> {
-        return self.addTodoWithObservable(title: title)
-            .flatMapLatest { _ in
-                self.fetchTodosWithObservable()
-            }
-            .compactMap { $0.data }
-            .catch({ error in
-                print("TodosAPI - catch error / \(error)")
-                return Observable.just([])
-            })
-            .share(replay: 1)
+    ) -> AnyPublisher<[Todo], ApiError> {
+        return self.addTodoWithPublisher(title: title)
+            .flatMap { _ in
+                self.fetchTodosWithPublisher()
+            } // BaseListResponse<Todo>
+            .compactMap { $0.data } // [Todo]
+            .eraseToAnyPublisher()
+    }
+    
+    // MARK: 할 일 추가 후 모든 할 일 가져오기 No Error
+    /// - Parameters:
+    ///   - title: 내용
+    ///   - completion: 응답 결과
+    static func addTodoAndFetchTodosWithPublisherNoError(
+        title: String,
+        isDone: Bool = false
+    ) -> AnyPublisher<[Todo], Never> {
+        return self.addTodoWithPublisher(title: title)
+            .flatMap { _ in
+                self.fetchTodosWithPublisher()
+            } // BaseListResponse<Todo>
+            .compactMap { $0.data } // [Todo]
+            .replaceError(with: [])
+            .eraseToAnyPublisher()
+    }
+    
+    // MARK: 할 일 추가 후 모든 할 일 가져오기
+    /// rx의 flatMapLatest대신 map + switchToLatest 사용
+    /// - Parameters:
+    ///   - title: 내용
+    ///   - completion: 응답 결과
+    static func addTodoAndFetchTodosWithPublisherNoErrorSwitchToLatest(
+        title: String,
+        isDone: Bool = false
+    ) -> AnyPublisher<[Todo], Never> {
+        return self.addTodoWithPublisher(title: title)
+            .map { _ in
+                self.fetchTodosWithPublisher()
+            } // BaseListResponse<Todo>
+            .switchToLatest()
+            .compactMap { $0.data } // [Todo]
+            .replaceError(with: [])
+            .eraseToAnyPublisher()
     }
     
     // MARK: 선택된 할 일들 삭제하기 - 클로저 기반 api 동시 처리
     /// - Parameters:
     ///   - selectedTodoIds: 선택된 할 일 아이디들
-    ///   - completion: 실제 삭제가 완료된 아이디들
-    static func deleteSelectedTodosWithPublisher(
-        selectedTodoIds: [Int]
-    ) -> Observable<[Int]> {
-        // 매개변수 배열 -> Observable 스트림 배열
-        // 배열로 단일 api들 호출
-        let apiCallObservables = selectedTodoIds.map { id -> Observable<Int?> in
-            return self.deleteTodoWithObservable(id: id)
-                .map { $0.data?.id } // Int?
-                .catchAndReturn(nil)
-//                .catch { error in
-//                    return Observable.just(nil)
-//                }
-        }
-        
-        // zip은 하나의 배열로 결과가 묶어짐 [A, B, C]
-        return Observable.zip(apiCallObservables) // Observable<[Int?]>
-            .map { $0.compactMap { $0 } } // Observable<[Int]>
-    }
-    
     static func deleteSelectedTodosWithPublisherMerge(
         selectedTodoIds: [Int]
-    ) -> Observable<Int> {
+    ) -> AnyPublisher<Int, ApiError> {
+        // 매개변수 배열 -> Publisher 스트림 배열
+        // 배열로 단일 api들 호출
+        let apiCallPublishers: [AnyPublisher<Int, ApiError>] = selectedTodoIds.map { id -> AnyPublisher<Int, ApiError> in
+            return self.deleteTodoWithPublisher(id: id)
+                .compactMap { $0.data?.id } // Int
+                .eraseToAnyPublisher()
+        }
+        
+        // 여러 퍼블리셔 스트림의 결과를 하나로 받음, 각각 하나씩 방출
+        return Publishers
+            .MergeMany(apiCallPublishers)
+            .eraseToAnyPublisher()
+    }
+    
+    static func deleteSelectedTodosWithPublisherMergeNoError(
+        selectedTodoIds: [Int]
+    ) -> AnyPublisher<Int, Never> {
         // 매개변수 배열 -> Observable 스트림 배열
         // 배열로 단일 api들 호출
-        let apiCallObservables = selectedTodoIds.map { id -> Observable<Int?> in
-            return self.deleteTodoWithObservable(id: id)
-                .map { $0.data?.id } // Int?
-                .catchAndReturn(nil)
+        let apiCallPublishers: [AnyPublisher<Int?, Never>] = selectedTodoIds.map { id -> AnyPublisher<Int?, Never> in
+            return self.deleteTodoWithPublisher(id: id)
+                .map { $0.data?.id } // Int
+                .replaceError(with: nil)
+                .eraseToAnyPublisher()
         }
         
         // 여러 옵저버블 스트림의 결과를 하나로 받음, 각각 하나씩 방출
-        return Observable.merge(apiCallObservables)
+        return Publishers
+            .MergeMany(apiCallPublishers)
             .compactMap { $0 }
+            .eraseToAnyPublisher()
+    }
+    
+    static func deleteSelectedTodosWithPublisherMergeNoErrorZip(
+        selectedTodoIds: [Int]
+    ) -> AnyPublisher<[Int], Never> {
+        // 매개변수 배열 -> Observable 스트림 배열
+        // 배열로 단일 api들 호출
+        let apiCallPublishers: [AnyPublisher<Int?, Never>] = selectedTodoIds.map { id -> AnyPublisher<Int?, Never> in
+            return self.deleteTodoWithPublisher(id: id)
+                .map { $0.data?.id } // Int?
+                .replaceError(with: nil)
+                .eraseToAnyPublisher()
+        }
+        
+        // 여러 옵저버블 스트림의 결과를 하나로 받음, 각각 하나씩 방출
+        return apiCallPublishers
+            .zip()
+            .map { $0.compactMap { $0 } }
+            .eraseToAnyPublisher()
     }
     
     
@@ -616,17 +696,20 @@ extension TodosApi {
     /// - Parameters:
     ///   - selectedTodoIds: 선택된 할 일 아이디들
     ///   - completion: 응답 결과
-    static func fetchSelectedTodosWithPublisher(
+    static func fetchSelectedTodosWithPublisherZip(
         selectedTodoIds: [Int]
-    ) -> Observable<[Todo]> {
-        let apiCallObservables = selectedTodoIds.map { id -> Observable<Todo?> in
-            return self.fetchTodoWithObservable(id: id)
-                .map { $0.data }
-                .catchAndReturn(nil)
+    ) -> AnyPublisher<[Todo], Never> {
+        let apiCallPublishers = selectedTodoIds.map { id -> AnyPublisher<Todo?, Never> in
+            return self.fetchTodoWithPublisher(id: id)
+                .compactMap { $0.data }
+                .replaceError(with: nil)
+                .eraseToAnyPublisher()
         }
         
-        return Observable.zip(apiCallObservables)
+        return apiCallPublishers
+            .zip()
             .map { $0.compactMap { $0 } }
+            .eraseToAnyPublisher()
     }
     
     // MARK: 선택된 할 일들 가져오기 - 클로저 기반 api 동시 처리
@@ -635,15 +718,33 @@ extension TodosApi {
     ///   - completion: 응답 결과
     static func fetchSelectedTodosWithPublisherMerge(
         selectedTodoIds: [Int]
-    ) -> Observable<Todo> {
-        let apiCallObservables = selectedTodoIds.map { id -> Observable<Todo?> in
-            return self.fetchTodoWithObservable(id: id)
+    ) -> AnyPublisher<Todo, ApiError> {
+        let apiCallPublishers = selectedTodoIds.map { id -> AnyPublisher<Todo?, ApiError> in
+            return self.fetchTodoWithPublisher(id: id)
                 .map { $0.data }
-                .catchAndReturn(nil)
+                .eraseToAnyPublisher()
         }
         
-        return Observable.merge(apiCallObservables)
+        return Publishers
+            .MergeMany(apiCallPublishers)
             .compactMap { $0 }
+            .eraseToAnyPublisher()
+    }
+    
+    static func fetchSelectedTodosWithPublisherMergeNoError(
+        selectedTodoIds: [Int]
+    ) -> AnyPublisher<Todo, Never> {
+        let apiCallPublishers = selectedTodoIds.map { id -> AnyPublisher<Todo?, Never> in
+            return self.fetchTodoWithPublisher(id: id)
+                .map { $0.data }
+                .replaceError(with: nil)
+                .eraseToAnyPublisher()
+        }
+        
+        return Publishers
+            .MergeMany(apiCallPublishers)
+            .compactMap { $0 }
+            .eraseToAnyPublisher()
     }
 }
 

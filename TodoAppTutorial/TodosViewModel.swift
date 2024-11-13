@@ -19,17 +19,17 @@ class TodosViewModel: ObservableObject {
     
     init() {
         TodosApi
-            .deleteTodoWithPublisher(id: 6731)
+            .fetchSelectedTodosWithPublisherMergeNoError(selectedTodoIds: [6741, 5853, 6710, 6732])
             .sink { [weak self] completion in
                 guard let self = self else { return }
                 switch completion {
                 case .finished:
-                    print("TodoViewModel - deleteTodoWithPublisher finished")
+                    print("TodoViewModel - finished")
                 case .failure(let error):
                     self.handleError(error)
                 }
             } receiveValue: { response in
-                print("TodosViewModel - deleteTodoWithPublisher : \(response)")
+                print("TodosViewModel - response : \(response)")
             }
             .store(in: &subscriptions)
         

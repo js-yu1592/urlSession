@@ -465,6 +465,7 @@ extension TodosApi {
     }
     
     // MARK: 할 일 추가 후 모든 할 일 가져오기
+    /// flatMap과 flatMapLatest의 차이: flatMap같은 경우 새로운 데이터 스트림이 생겨 옵저버블을 만들어  방출하지만 flatMapLatest는 최신 옵저버블을 방출
     /// - Parameters:
     ///   - title: 내용
     ///   - completion: 응답 결과
