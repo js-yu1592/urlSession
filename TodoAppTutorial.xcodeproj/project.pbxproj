@@ -28,14 +28,15 @@
 		2E4A88DF2CCF7C6800686119 /* URL+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A88DE2CCF7C6800686119 /* URL+Ext.swift */; };
 		2E4A88E22CD0B2B900686119 /* MultipartForm in Frameworks */ = {isa = PBXBuildFile; productRef = 2E4A88E12CD0B2B900686119 /* MultipartForm */; };
 		2E4A88E42CD0EDD600686119 /* URLRequest+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A88E32CD0EDD600686119 /* URLRequest+Ext.swift */; };
-		2E4A88E62CD1323700686119 /* TodosAPI+Closure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A88E52CD1323700686119 /* TodosAPI+Closure.swift */; };
+		2E4A88E62CD1323700686119 /* TodosApi+Closure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A88E52CD1323700686119 /* TodosApi+Closure.swift */; };
 		2E4A88E92CD2022300686119 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 2E4A88E82CD2022300686119 /* RxCocoa */; };
 		2E4A88EB2CD2022300686119 /* RxRelay in Frameworks */ = {isa = PBXBuildFile; productRef = 2E4A88EA2CD2022300686119 /* RxRelay */; };
 		2E4A88ED2CD2022300686119 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2E4A88EC2CD2022300686119 /* RxSwift */; };
-		2E4A88EF2CD2025A00686119 /* TodosAPI+Rx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A88EE2CD2025A00686119 /* TodosAPI+Rx.swift */; };
-		2E4A88FA2CE1DBA100686119 /* TodosAPI+Combine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A88F92CE1DBA100686119 /* TodosAPI+Combine.swift */; };
+		2E4A88EF2CD2025A00686119 /* TodosApi+Rx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A88EE2CD2025A00686119 /* TodosApi+Rx.swift */; };
+		2E4A88FA2CE1DBA100686119 /* TodosApi+Combine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A88F92CE1DBA100686119 /* TodosApi+Combine.swift */; };
 		2E4A88FD2CE31ADB00686119 /* Bundle+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A88FC2CE31ADB00686119 /* Bundle+Ext.swift */; };
 		2E4A892A2CE4BA8100686119 /* CombineExt in Frameworks */ = {isa = PBXBuildFile; productRef = 2E4A89292CE4BA8100686119 /* CombineExt */; };
+		2E4A892C2CE5E14C00686119 /* TodosApi+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4A892B2CE5E14C00686119 /* TodosApi+Async.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,11 +61,12 @@
 		2E4A88DB2CCD349700686119 /* TodosResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodosResponse.swift; sourceTree = "<group>"; };
 		2E4A88DE2CCF7C6800686119 /* URL+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Ext.swift"; sourceTree = "<group>"; };
 		2E4A88E32CD0EDD600686119 /* URLRequest+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+Ext.swift"; sourceTree = "<group>"; };
-		2E4A88E52CD1323700686119 /* TodosAPI+Closure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodosAPI+Closure.swift"; sourceTree = "<group>"; };
-		2E4A88EE2CD2025A00686119 /* TodosAPI+Rx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodosAPI+Rx.swift"; sourceTree = "<group>"; };
-		2E4A88F92CE1DBA100686119 /* TodosAPI+Combine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodosAPI+Combine.swift"; sourceTree = "<group>"; };
+		2E4A88E52CD1323700686119 /* TodosApi+Closure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodosApi+Closure.swift"; sourceTree = "<group>"; };
+		2E4A88EE2CD2025A00686119 /* TodosApi+Rx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodosApi+Rx.swift"; sourceTree = "<group>"; };
+		2E4A88F92CE1DBA100686119 /* TodosApi+Combine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodosApi+Combine.swift"; sourceTree = "<group>"; };
 		2E4A88FB2CE318A800686119 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		2E4A88FC2CE31ADB00686119 /* Bundle+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Ext.swift"; sourceTree = "<group>"; };
+		2E4A892B2CE5E14C00686119 /* TodosApi+Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodosApi+Async.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,9 +172,10 @@
 			isa = PBXGroup;
 			children = (
 				2E4A88D62CCA45D300686119 /* TodosApi.swift */,
-				2E4A88E52CD1323700686119 /* TodosAPI+Closure.swift */,
-				2E4A88EE2CD2025A00686119 /* TodosAPI+Rx.swift */,
-				2E4A88F92CE1DBA100686119 /* TodosAPI+Combine.swift */,
+				2E4A88E52CD1323700686119 /* TodosApi+Closure.swift */,
+				2E4A88EE2CD2025A00686119 /* TodosApi+Rx.swift */,
+				2E4A88F92CE1DBA100686119 /* TodosApi+Combine.swift */,
+				2E4A892B2CE5E14C00686119 /* TodosApi+Async.swift */,
 			);
 			path = API;
 			sourceTree = "<group>";
@@ -280,6 +283,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2E4A88C02CB3DCD100686119 /* Nibbed.swift in Sources */,
+				2E4A892C2CE5E14C00686119 /* TodosApi+Async.swift in Sources */,
 				2E4A88D92CCA49CA00686119 /* TodosViewModel.swift in Sources */,
 				2E4A88CD2CBD72B400686119 /* UISearchBarWrapper.swift in Sources */,
 				2E4A88D72CCA45D300686119 /* TodosApi.swift in Sources */,
@@ -291,14 +295,14 @@
 				2E4A88A42CAA6B1D00686119 /* TodoAppTutorialApp.swift in Sources */,
 				2E4A88C22CB3DCF100686119 /* ReuseIdentifiable.swift in Sources */,
 				2E4A88B82CB3C1EC00686119 /* TodoCell.swift in Sources */,
-				2E4A88EF2CD2025A00686119 /* TodosAPI+Rx.swift in Sources */,
+				2E4A88EF2CD2025A00686119 /* TodosApi+Rx.swift in Sources */,
 				2E4A88CA2CBCE2BE00686119 /* Button+Style.swift in Sources */,
 				2E4A88C62CBCDFEF00686119 /* TodosView.swift in Sources */,
 				2E4A88CF2CBD73F400686119 /* TodoRow.swift in Sources */,
-				2E4A88E62CD1323700686119 /* TodosAPI+Closure.swift in Sources */,
+				2E4A88E62CD1323700686119 /* TodosApi+Closure.swift in Sources */,
 				2E4A88FD2CE31ADB00686119 /* Bundle+Ext.swift in Sources */,
 				2E4A88C42CB3DD0D00686119 /* Storyboarded.swift in Sources */,
-				2E4A88FA2CE1DBA100686119 /* TodosAPI+Combine.swift in Sources */,
+				2E4A88FA2CE1DBA100686119 /* TodosApi+Combine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

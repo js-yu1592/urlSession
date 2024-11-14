@@ -18,20 +18,15 @@ class TodosViewModel: ObservableObject {
     var subscriptions = Set<AnyCancellable>()
     
     init() {
-        TodosApi
-            .fetchSelectedTodosWithPublisherMergeNoError(selectedTodoIds: [6741, 5853, 6710, 6732])
-            .sink { [weak self] completion in
-                guard let self = self else { return }
-                switch completion {
-                case .finished:
-                    print("TodoViewModel - finished")
-                case .failure(let error):
-                    self.handleError(error)
-                }
-            } receiveValue: { response in
-                print("TodosViewModel - response : \(response)")
+        
+        Task {
+            do {
+                let response = try await TodosApi.deleteTodoWithAsync(id: 6747)
+                print("TodosViewModel response: \(response)")
+            } catch {
+                self.handleError(error)
             }
-            .store(in: &subscriptions)
+        }
         
     }
     
