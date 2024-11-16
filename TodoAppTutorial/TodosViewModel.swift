@@ -20,12 +20,8 @@ class TodosViewModel: ObservableObject {
     init() {
         
         Task {
-            do {
-                let response = try await TodosApi.deleteTodoWithAsync(id: 6747)
-                print("TodosViewModel response: \(response)")
-            } catch {
-                self.handleError(error)
-            }
+            let response = await TodosApi.fetchSelectedTodosWithAsyncTaskGroupNoError(selectedTodoIds: [5853, 6709, 6705])
+            print("TodosViewModel response: \(response)")
         }
         
     }
