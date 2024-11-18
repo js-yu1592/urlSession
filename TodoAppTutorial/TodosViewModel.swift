@@ -20,10 +20,9 @@ class TodosViewModel: ObservableObject {
     init() {
         
         Task {
-            let response = await TodosApi.fetchSelectedTodosWithAsyncTaskGroupNoError(selectedTodoIds: [5853, 6709, 6705])
-            print("TodosViewModel response: \(response)")
+            let result = await TodosApi.fetchSelectedTodosClosureToAsyncReturningArray(selectedIds: [5853, 6755, 6756])
+            print("TodosViewModel result: \(result)")
         }
-        
     }
     
     fileprivate func handleError(_ error: Error) {

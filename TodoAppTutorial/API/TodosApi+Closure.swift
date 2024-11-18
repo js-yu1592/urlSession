@@ -56,6 +56,65 @@ extension TodosApi {
         }.resume()
     }
     
+    /// 에러 처리 X - result
+    /// Closure -> Async
+    static func fetchTodosClosureToAsync(page: Int = 1) async -> Result<BaseListResponse<Todo>, ApiError> {
+        return await withCheckedContinuation { (continuation: CheckedContinuation<Result<BaseListResponse<Todo>, ApiError>, Never>) in
+            fetchTodos(page: page) { (result: Result<BaseListResponse<Todo>, ApiError>) in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+    
+    /// 에러 처리 X - [Todo]
+    /// Closure -> Async
+    static func fetchTodosClosureToAsyncReturnArray(page: Int = 1) async -> [Todo] {
+        return await withCheckedContinuation { (continuation: CheckedContinuation<[Todo], Never>) in
+            fetchTodos(page: page) { (result: Result<BaseListResponse<Todo>, ApiError>) in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data ?? [])
+                case .failure(_):
+                    continuation.resume(returning: [])
+                }
+            }
+        }
+    }
+    
+    /// 에러 처리 O
+    /// Closure -> Async
+    static func fetchTodosClosureToAsyncWithError(page: Int = 1) async throws -> BaseListResponse<Todo> {
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<BaseListResponse<Todo>, Error>) in
+            fetchTodos(page: page) { (result: Result<BaseListResponse<Todo>, ApiError>) in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    /// 에러 처리 O - 에러 형태 변경
+    /// Closure -> Async
+    static func fetchTodosClosureToAsyncWithMapError(page: Int = 1) async throws -> BaseListResponse<Todo> {
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<BaseListResponse<Todo>, Error>) in
+            fetchTodos(page: page) { (result: Result<BaseListResponse<Todo>, ApiError>) in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    // 에러를 변경해서 throwing
+//                    if let _ = error as? DecodingError {
+//                        continuation.resume(throwing: ApiError.decodingError)
+//                    }
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
     // MARK: 특정 할 일 가져오기
     static func fetchTodo(id: Int, completion: @escaping (Result<BaseResponse<Todo>, ApiError>) -> Void) {
         guard let url = URL(
@@ -102,6 +161,27 @@ extension TodosApi {
                 }
             }
         }.resume()
+    }
+    
+    static func fetchTodoClosureToAsync(id: Int) async -> Result<BaseResponse<Todo>, ApiError> {
+        return await withCheckedContinuation { continuation in
+            fetchTodo(id: id) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+    
+    static func fetchTodoClosureToAsyncWithError(id: Int) async throws -> BaseResponse<Todo> {
+        return try await withCheckedThrowingContinuation { continuation in
+            fetchTodo(id: id) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
     
     // MARK: 할 일 검색하기
@@ -162,6 +242,40 @@ extension TodosApi {
                 }
             }
         }.resume()
+    }
+    
+    static func searchTodosClosureToAsync(searchTerm: String, page: Int = 1) async -> Result<BaseListResponse<Todo>, ApiError> {
+        return await withCheckedContinuation { continuation in
+            searchTodos(searchTerm: searchTerm, page: page) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+    
+    static func searchTodosClosureToAsyncReturningArray(searchTerm: String, page: Int = 1) async -> [Todo] {
+        return await withCheckedContinuation { continuation in
+            searchTodos(searchTerm: searchTerm) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data ?? [])
+                case .failure(_):
+                    continuation.resume(returning: [])
+                }
+            }
+        }
+    }
+    
+    static func searchTodosClosureToAsyncWithError(searchTerm: String, page: Int = 1) async throws -> BaseListResponse<Todo> {
+        return try await withCheckedThrowingContinuation { continuation in
+            searchTodos(searchTerm: searchTerm) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
     
     // MARK: 할 일 추가하기
@@ -226,6 +340,27 @@ extension TodosApi {
                 }
             }
         }.resume()
+    }
+    
+    static func addTodoClosureToAsync(title: String, isDone: Bool = false) async -> Result<BaseResponse<Todo>, ApiError> {
+        return await withCheckedContinuation { continuation in
+            addTodo(title: title, isDone: isDone) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+    
+    static func addTodoClosureToAsyncWithError(title: String, isDone: Bool = false) async throws -> BaseResponse<Todo> {
+        return try await withCheckedThrowingContinuation { continuation in
+            addTodo(title: title) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     // MARK: 할 일 추가하기 - Json
@@ -366,6 +501,27 @@ extension TodosApi {
         }.resume()
     }
     
+    static func editTodoJsonClosureToAsync(id: Int, title: String, isDone: Bool = false) async -> Result<BaseResponse<Todo>, ApiError> {
+        return await withCheckedContinuation { continuation in
+            editTodoJson(id: id, title: title) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+    
+    static func editTodoJsonClosureToAsyncWithError(id: Int, title: String, isDone: Bool = false) async throws -> BaseResponse<Todo> {
+        return try await withCheckedThrowingContinuation { continuation in
+            editTodoJson(id: id, title: title) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
     // MARK: 할 일 수정하기 - PUT urlEncoded
     /// - Parameters:
     ///   - id:수정할 할 일 아이디
@@ -488,6 +644,27 @@ extension TodosApi {
         }.resume()
     }
     
+    static func deleteTodoClosureToAsync(id: Int) async -> Result<BaseResponse<Todo>, ApiError> {
+        return await withCheckedContinuation { continuation in
+            deleteTodo(id: id) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+    
+    static func deleteTodoClosureToAsyncWithError(id: Int) async throws -> BaseResponse<Todo> {
+        return try await withCheckedThrowingContinuation { continuation in
+            deleteTodo(id: id) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
     // MARK: 할 일 추가 후 모든 할 일 가져오기
     /// - Parameters:
     ///   - title: 내용
@@ -510,6 +687,40 @@ extension TodosApi {
                 }
             case .failure(let error):
                 completion(.failure(error))
+            }
+        }
+    }
+    
+    static func addTodoAndFetchTodosClosureToAsync(title: String, isDone: Bool = false) async -> Result<BaseListResponse<Todo>, ApiError> {
+        return await withCheckedContinuation { continuation in
+            addTodoAndFetchTodos(title: title) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+    
+    static func addTodoAndFetchTodosClosureToAsyncWithError(title: String, isDone: Bool = false) async throws -> BaseListResponse<Todo> {
+        return try await withCheckedThrowingContinuation { continuation in
+            addTodoAndFetchTodos(title: title) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    static func addTodoAndFetchTodosClosureToAsyncReturningArray(title: String, isDone: Bool = false) async -> [Todo] {
+        return await withCheckedContinuation { continuation in
+            addTodoAndFetchTodos(title: title) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data ?? [])
+                case .failure(_):
+                    continuation.resume(returning: [])
+                }
             }
         }
     }
@@ -546,6 +757,26 @@ extension TodosApi {
         group.notify(queue: .main) {
             print("모든 삭제 api 완료")
             completion(deletedTodoIds)
+        }
+    }
+    
+    static func deleteSelectedTodosClosureToAsync(selectedIds: [Int]) async -> [Int] {
+        return await withCheckedContinuation { continuation in
+            deleteSelectedTodos(selectedTodoIds: selectedIds) { deletedTodoIds in
+                continuation.resume(returning: deletedTodoIds)
+            }
+        }
+    }
+    
+    static func deleteSelectedTodosClosureToAsyncWithError(selectedIds: [Int]) async throws -> [Int] {
+        return try await withCheckedThrowingContinuation { continuation in
+            deleteSelectedTodos(selectedTodoIds: selectedIds) { deletedTodoIds in
+                if deletedTodoIds.isEmpty {
+                    continuation.resume(throwing: ApiError.noContent)
+                } else {
+                    continuation.resume(returning: deletedTodoIds)
+                }
+            }
         }
     }
  
@@ -599,4 +830,38 @@ extension TodosApi {
             completion(.success(fetchedTodos))
         }
     }
-}
+    
+    static func fetchSelectedTodosClosureToAsync(selectedIds: [Int]) async -> Result<[Todo], ApiError> {
+        return await withCheckedContinuation { continuation in
+            fetchSelectedTodos(selectedTodoIds: selectedIds) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+    
+    static func fetchSelectedTodosClosureToAsyncWithError(selectedIds: [Int]) async throws -> [Todo] {
+        return try await withCheckedThrowingContinuation { continuation in
+            fetchSelectedTodos(selectedTodoIds: selectedIds) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    static func fetchSelectedTodosClosureToAsyncReturningArray(selectedIds: [Int]) async -> [Todo] {
+        return await withCheckedContinuation { continuation in
+            fetchSelectedTodos(selectedTodoIds: selectedIds) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(_):
+                    continuation.resume(returning: [])
+                }
+            }
+        }
+    }
+ }
